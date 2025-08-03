@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Routine } from '../types/index';
-import type { DateInfo } from '../utils/dateUtils';
+
 import { getDaysInMonth, getMonthName, getCurrentMonth, addMonths, formatDate } from '../utils/dateUtils';
 import { DayCell } from './DayCell';
 

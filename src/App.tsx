@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import type { Routine, RoutineFormData } from './types/index';
 import { Home } from './pages/Home';

@@ -16,13 +16,6 @@ export const RoutineAnalytics: React.FC<RoutineAnalyticsProps> = memo(({ routine
     setTimeFrame(frame);
   }, []);
 
-  // Convert completed dates to Date objects and sort them
-  const completedDates = useMemo(() => {
-    return routine.completedDates
-      .map(dateStr => new Date(dateStr))
-      .sort((a, b) => a.getTime() - b.getTime());
-  }, [routine.completedDates]);
-
   // Weekly data
   const weeklyData = useMemo(() => {
     const data = [];

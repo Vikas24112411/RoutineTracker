@@ -1,0 +1,20 @@
+/* Custom styles for the Routine Tracker app */
+/* Most styling is handled by Tailwind CSS */
+
+/* Ensure proper touch targets on mobile */
+button, input, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth scrolling for mobile */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent text selection on buttons */
+button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

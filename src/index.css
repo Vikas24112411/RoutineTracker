@@ -15,11 +15,13 @@
     --bg-nav: rgba(55, 65, 81, 0.4);
     --bg-nav-hover: rgba(255, 255, 255, 0.2);
     --bg-modal: rgb(30 35 42 / 95%);
+    --bg-secondary: rgba(255, 255, 255, 0.9);
     --text-primary: #1e293b;
     --text-secondary: #475569;
     --text-muted: #64748b;
     --border-primary: rgba(255, 255, 255, 0.3);
     --border-secondary: rgba(255, 255, 255, 0.2);
+    --border-color: rgba(255, 255, 255, 0.2);
     --shadow-primary: 0 8px 32px rgba(0, 0, 0, 0.08);
     --shadow-secondary: 0 4px 16px rgba(0, 0, 0, 0.06);
     --color-scheme: light;
@@ -35,11 +37,13 @@
     --bg-nav: rgba(55, 65, 81, 0.4);
     --bg-nav-hover: rgba(55, 65, 81, 0.5);
     --bg-modal: rgb(30 35 42 / 95%);
+    --bg-secondary: rgba(30, 35, 42, 0.95);
     --text-primary: #ffffff;
     --text-secondary: #e2e8f0;
     --text-muted: #cbd5e1;
     --border-primary: rgba(255, 255, 255, 0.15);
     --border-secondary: rgba(255, 255, 255, 0.08);
+    --border-color: rgba(255, 255, 255, 0.1);
     --shadow-primary: 0 8px 32px rgba(0, 0, 0, 0.2);
     --shadow-secondary: 0 4px 16px rgba(0, 0, 0, 0.15);
     --color-scheme: dark;

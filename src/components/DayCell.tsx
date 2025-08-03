@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import type { DateInfo } from '../utils/dateUtils';
 
 interface DayCellProps {
@@ -7,14 +7,14 @@ interface DayCellProps {
   onToggle: (date: Date) => void;
 }
 
-export const DayCell: React.FC<DayCellProps> = ({
+export const DayCell: React.FC<DayCellProps> = memo(({
   dayInfo,
   routineColor,
   onToggle,
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (dayInfo.isCurrentMonth) {
       setIsAnimating(true);
       onToggle(dayInfo.date);
@@ -24,7 +24,7 @@ export const DayCell: React.FC<DayCellProps> = ({
         setIsAnimating(false);
       }, 300);
     }
-  };
+  }, [dayInfo.isCurrentMonth, dayInfo.date, onToggle]);
 
   return (
     <button
@@ -54,4 +54,4 @@ export const DayCell: React.FC<DayCellProps> = ({
       <span className="block text-xs font-semibold drop-shadow-sm">{dayInfo.day}</span>
     </button>
   );
-}; 
+}); 

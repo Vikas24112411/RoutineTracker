@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Routine } from '../types/index';
 
 import { getDaysInMonth, getMonthName, getCurrentMonth, addMonths, formatDate } from '../utils/dateUtils';
 import { DayCell } from './DayCell';
+import { RoutineAnalytics } from './RoutineAnalytics';
 
 interface CalendarViewProps {
   routine: Routine;
@@ -19,6 +20,47 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const [localCompletedDates, setLocalCompletedDates] = useState<string[]>(routine.completedDates);
   
   const days = getDaysInMonth(currentMonth.year, currentMonth.month);
+
+  // Calculate streak data
+  const streakData = useMemo(() => {
+    let currentStreak = 0;
+    let maxStreak = 0;
+    let tempStreak = 0;
+    const now = new Date();
+    
+    // Calculate current streak (consecutive days from today backwards)
+    let currentStreakCount = 0;
+    for (let i = 0; i < 365; i++) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      const dateStr = formatDate(date);
+      const isCompleted = localCompletedDates.includes(dateStr);
+      
+      if (isCompleted) {
+        currentStreakCount++;
+      } else {
+        break; // Stop counting when we hit a non-completed day
+      }
+    }
+    currentStreak = currentStreakCount;
+    
+    // Calculate max streak (longest consecutive streak in all data)
+    for (let i = 0; i < 365; i++) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      const dateStr = formatDate(date);
+      const isCompleted = localCompletedDates.includes(dateStr);
+      
+      if (isCompleted) {
+        tempStreak++;
+        maxStreak = Math.max(maxStreak, tempStreak);
+      } else {
+        tempStreak = 0;
+      }
+    }
+    
+    return { currentStreak, maxStreak };
+  }, [localCompletedDates]);
   
   // Update local state when routine changes
   useEffect(() => {
@@ -33,7 +75,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     }));
   }, [days, localCompletedDates]);
 
-  const handleToggleDate = (date: Date) => {
+  const handleToggleDate = useCallback((date: Date) => {
     const dateString = formatDate(date);
     const isCompleted = localCompletedDates.includes(dateString);
     
@@ -46,19 +88,19 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     
     // Call the parent handler
     onToggleDate(routine.id, date);
-  };
+  }, [localCompletedDates, onToggleDate, routine.id]);
 
-  const goToPreviousMonth = () => {
+  const goToPreviousMonth = useCallback(() => {
     setCurrentMonth(addMonths(currentMonth.year, currentMonth.month, -1));
-  };
+  }, [currentMonth.year, currentMonth.month]);
 
-  const goToNextMonth = () => {
+  const goToNextMonth = useCallback(() => {
     setCurrentMonth(addMonths(currentMonth.year, currentMonth.month, 1));
-  };
+  }, [currentMonth.year, currentMonth.month]);
 
-  const goToCurrentMonth = () => {
+  const goToCurrentMonth = useCallback(() => {
     setCurrentMonth(getCurrentMonth());
-  };
+  }, []);
 
   return (
     <div className="mobile-container">
@@ -78,51 +120,94 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
             {routine.description}
           </p>
         )}
-        <div className="stats-badge inline-block">
-          <span className="font-semibold text-xs drop-shadow-sm" style={{ color: 'var(--text-primary)' }}>
-            Completed {localCompletedDates.length} days
-          </span>
-        </div>
-      </div>
-
-      {/* Calendar Navigation - Centered and shrunk by 30% */}
-      <div className="flex items-center justify-center mb-4">
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={goToPreviousMonth}
-            className="nav-button"
-          >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          
-          <div className="text-center">
-            <h2 className="text-lg font-bold drop-shadow-lg" style={{ color: 'var(--text-primary)' }}>
-              {getMonthName(currentMonth.month)} {currentMonth.year}
-            </h2>
-            <button
-              onClick={goToCurrentMonth}
-              className="font-medium text-xs drop-shadow-sm hover:opacity-80 transition-opacity"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              Today
-            </button>
+        <div className="flex items-center space-x-2">
+          {/* Completed Days - 50% width */}
+          <div className="w-1/2">
+            <div className="stats-badge inline-block w-full text-center">
+              <span className="font-semibold text-sm drop-shadow-sm" style={{ color: 'var(--text-primary)' }}>
+                Completed {localCompletedDates.length} days
+              </span>
+            </div>
           </div>
           
-          <button
-            onClick={goToNextMonth}
-            className="nav-button"
-          >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          {/* Current Streak - 25% width */}
+          <div className="w-1/4">
+            <div className="flex items-center justify-center bg-gradient-to-r from-green-500/10 to-green-600/10 rounded-lg px-2 py-2 border border-green-500/20">
+              <div className="flex items-center space-x-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: routine.color }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <div className="text-center">
+                  <div className="text-sm font-bold" style={{ color: routine.color }}>
+                    {streakData.currentStreak}
+                  </div>
+                  <div className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    Current
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Best Streak - 25% width */}
+          <div className="w-1/4">
+            <div className="flex items-center justify-center bg-gradient-to-r from-purple-500/10 to-purple-600/10 rounded-lg px-2 py-2 border border-purple-500/20">
+              <div className="flex items-center space-x-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: routine.color }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+                <div className="text-center">
+                  <div className="text-sm font-bold" style={{ color: routine.color }}>
+                    {streakData.maxStreak}
+                  </div>
+                  <div className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    Best
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Calendar Grid */}
-      <div className="floating-card">
+      <div className="floating-card mb-4">
+        {/* Calendar Navigation - Inside the card */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={goToPreviousMonth}
+              className="nav-button"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            
+            <div className="text-center">
+              <h2 className="text-lg font-bold drop-shadow-lg" style={{ color: 'var(--text-primary)' }}>
+                {getMonthName(currentMonth.month)} {currentMonth.year}
+              </h2>
+              <button
+                onClick={goToCurrentMonth}
+                className="font-medium text-xs drop-shadow-sm hover:opacity-80 transition-opacity"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                Today
+              </button>
+            </div>
+            
+            <button
+              onClick={goToNextMonth}
+              className="nav-button"
+            >
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
         {/* Day Headers */}
         <div className="grid grid-cols-7 gap-2 mb-6">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
@@ -144,6 +229,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
           ))}
         </div>
       </div>
+
+      {/* Analytics Card */}
+      <RoutineAnalytics routine={{ ...routine, completedDates: localCompletedDates }} />
 
       {/* Home Button - Fixed at bottom left */}
       <div className="fixed bottom-4 left-4 z-50">
